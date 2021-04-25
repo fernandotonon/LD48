@@ -8,6 +8,7 @@ Window {
     visible: true
     title: qsTr("Hello World")
     property int antsEaten:0
+    property bool canEat: true
     property var antComponent: Qt.createComponent("Ant.qml")
     property int mapCols: 30
     property var initialMap:   [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,3,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
@@ -32,9 +33,15 @@ Window {
     Rectangle{
         anchors.fill: parent
         color: "green"
-        Text {
-            color: "white"
-            text: "Ants Eaten: "+antsEaten
+        Column{
+            Text {
+                color: "white"
+                text: "Ants Eaten: "+antsEaten
+            }
+            Text {
+                color: "white"
+                text: "Able to eat: "+(canEat?"yes":"no")
+            }
         }
     }
 
@@ -223,7 +230,7 @@ Window {
             }
             MouseArea{
                 anchors.fill: parent
-                onClicked: addFeromone(index,0.5)
+                onClicked: antEater(index)//addFeromone(index,0.5)
                 preventStealing: true
             }
             Rectangle{
@@ -242,38 +249,21 @@ Window {
         }
     }
     property var anteaterPath: []
-    function antEater(){
-        let position=gameWindow.initialMap.indexOf(3)
-        let iO=gameWindow.initialMap.indexOf(1)
-        let p1=gameWindow.aStar(position,iO)
-        iO=gameWindow.initialMap.indexOf(1,iO+1)
-        let p2=gameWindow.aStar(position,iO)
-        iO=gameWindow.initialMap.indexOf(1,iO+1)
-        let p3=gameWindow.aStar(position,iO)
-
-        let p1F=0
-        let p2F=0
-        let p3F=0
-
-        p1.forEach(function(i){p1F+=feromoneMap[i]})
-        p2.forEach(function(i){p2F+=feromoneMap[i]})
-        p3.forEach(function(i){p3F+=feromoneMap[i]})
-
-        let sum=p1F+p2F+p3F
-        let v=[{"path":0,"l":p1F/sum},{"path":1,"l":p2F/sum},{"path":2,"l":p3F/sum}]
-        v.sort(function(a,b){return b.l-a.l})
-
-        if(v[0].path===0) anteaterPath=p1
-        else if(v[0].path===1) anteaterPath=p2
-        else anteaterPath=p3
+    function antEater(index){
+        if(canEat){
+            anteaterPath=aStar(initialMap.indexOf(3),index)
+            tT.start()
+            canEat=false
+        }
     }
 
     Timer{
         interval: 5000
         repeat: true
         running: true
-        onTriggered: {antEater();tT.start()}
+        onTriggered: canEat=true
     }
+
     Timer{
         id:tT
         interval: 100
