@@ -2,5 +2,7 @@
     <qresource prefix="/">
         <file>main.qml</file>
         <file>Ant.qml</file>
+        <file alias="ant.png">ant.png</file>
+        <file>anteater.png</file>
     </qresource>
 </RCC>
